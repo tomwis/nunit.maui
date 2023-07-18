@@ -37,14 +37,7 @@ public static class MauiProgram
             // ResultFilePath = Path.Combine(Environment.ExternalStorageDirectory.Path, Environment.DirectoryDownloads, "Nunit", "Results.xml")
         };
         
-        var builder = MauiApp.CreateBuilder();
-        builder
-            .UseMauiApp(_ => nunit)
-            .ConfigureFonts(fonts =>
-            {
-                fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
-                fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
-            });
+        var builder = MauiApp.CreateBuilder().UseMauiApp(_ => nunit);
 
 #if DEBUG
         builder.Logging.AddDebug();
