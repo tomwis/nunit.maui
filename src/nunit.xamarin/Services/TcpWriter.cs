@@ -25,7 +25,6 @@ using System;
 using System.IO;
 
 using System.Threading.Tasks;
-using Xamarin.Forms;
 using NUnit.Runner.Messages;
 using System.Threading;
 

@@ -22,7 +22,6 @@
 // ***********************************************************************
 
 using NUnit.Runner.ViewModel;
-using Xamarin.Forms;
 
 namespace NUnit.Runner.View
 {

@@ -25,7 +25,6 @@ using System;
 using System.Text;
 using NUnit.Framework.Interfaces;
 using NUnit.Runner.Extensions;
-using Xamarin.Forms;
 
 namespace NUnit.Runner.ViewModel
 {

@@ -30,7 +30,6 @@ using NUnit.Runner.View;
 
 using NUnit.Runner.Services;
 
-using Xamarin.Forms;
 
 namespace NUnit.Runner.ViewModel
 {

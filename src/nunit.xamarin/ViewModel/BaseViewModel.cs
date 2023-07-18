@@ -24,7 +24,6 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using NUnit.Runner.Annotations;
-using Xamarin.Forms;
 
 namespace NUnit.Runner.ViewModel
 {

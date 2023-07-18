@@ -22,7 +22,6 @@
 // ***********************************************************************
 
 using NUnit.Framework.Interfaces;
-using Xamarin.Forms;
 
 namespace NUnit.Runner.Extensions
 {
@@ -38,20 +37,20 @@ namespace NUnit.Runner.Extensions
             switch (result.Status)
             {
                 case TestStatus.Passed:
-                    return Xamarin.Forms.Color.Green;
+                    return Colors.Green;
                 case TestStatus.Skipped:
-                    return Xamarin.Forms.Color.FromRgb(206, 172, 0);    // Dark Yellow
+                    return Microsoft.Maui.Graphics.Color.FromRgb(206, 172, 0);    // Dark Yellow
                 case TestStatus.Failed:
                     if (result == ResultState.Failure)
-                        return Xamarin.Forms.Color.Red;
+                        return Colors.Red;
                     if (result == ResultState.NotRunnable)
-                        return Xamarin.Forms.Color.FromRgb(255, 106, 0);  // Orange
+                        return Microsoft.Maui.Graphics.Color.FromRgb(255, 106, 0);  // Orange
 
-                    return Xamarin.Forms.Color.FromRgb(170, 0, 0); // Dark Red
+                    return Microsoft.Maui.Graphics.Color.FromRgb(170, 0, 0); // Dark Red
 
                 case TestStatus.Inconclusive:
                 default:
-                    return Xamarin.Forms.Color.Gray;
+                    return Colors.Gray;
             }
         }
     }

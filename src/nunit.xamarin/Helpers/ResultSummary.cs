@@ -28,7 +28,6 @@ using System.Reflection;
 using System.Xml.Linq;
 using NUnit.Framework.Interfaces;
 using NUnit.Runner.Extensions;
-using Xamarin.Forms;
 
 namespace NUnit.Runner.Helpers
 {
