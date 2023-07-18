@@ -199,3 +199,5 @@ tools/*
 
 # Android Xamarin
 Resource.Designer.cs
+
+.idea/*
