@@ -23,6 +23,15 @@ Supported Maui platforms:
 - Android
 - iOS
     </Description>
+    <Configurations>Debug;Release;Debug_PreRelease</Configurations>
+    <Platforms>AnyCPU</Platforms>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug_PreRelease' ">
+    <VersionSuffix>$([System.DateTime]::Now.ToString("yyyyMMddHHmmss"))</VersionSuffix>
+    <Version>3.10.1-$(VersionSuffix)</Version>
+    <PackageOutputPath>$(HOME)\.nuget\local_packages</PackageOutputPath>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <PropertyGroup>
