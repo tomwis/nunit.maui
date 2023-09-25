@@ -35,7 +35,7 @@ Supported Maui platforms:
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="NUnit" Version="[3.10.1]" />
+    <PackageReference Include="NUnit" Version="[3.*,)" />
   </ItemGroup>
 
   <ItemGroup>
