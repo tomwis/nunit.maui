@@ -24,34 +24,32 @@
 using NUnit.Runner.Messages;
 using NUnit.Runner.ViewModel;
 
-namespace NUnit.Runner.View
+namespace NUnit.Runner.View;
+
+/// <summary>
+///     The main Xamarin.Forms view of the application
+/// </summary>
+public partial class SummaryView : ContentPage
 {
+    private readonly SummaryViewModel _model;
+
+    internal SummaryView(SummaryViewModel model)
+    {
+        _model = model;
+        _model.Navigation = Navigation;
+        BindingContext = _model;
+        InitializeComponent();
+
+        MessagingCenter.Subscribe<ErrorMessage>(this, ErrorMessage.Name,
+            error => { Dispatcher.Dispatch(async () => await DisplayAlert("Error", error.Message, "OK")); });
+    }
+
     /// <summary>
-    /// The main Xamarin.Forms view of the application
+    ///     Called when the view is appearing
     /// </summary>
-	public partial class SummaryView : ContentPage
-	{
-        SummaryViewModel _model;
-
-        internal SummaryView (SummaryViewModel model)
-		{
-            _model = model;
-		    _model.Navigation = Navigation;
-		    BindingContext = _model;
-			InitializeComponent();
-
-            MessagingCenter.Subscribe<ErrorMessage>(this, ErrorMessage.Name, error => {
-                Device.BeginInvokeOnMainThread(async () => await DisplayAlert("Error", error.Message, "OK"));
-            });
-        }
-
-        /// <summary>
-        /// Called when the view is appearing
-        /// </summary>
-        protected override void OnAppearing()
-        {
-            base.OnAppearing();
-            _model.OnAppearing();
-        }
+    protected override void OnAppearing()
+    {
+        base.OnAppearing();
+        _model.OnAppearing();
     }
 }

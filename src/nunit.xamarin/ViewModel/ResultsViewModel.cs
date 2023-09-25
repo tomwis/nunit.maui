@@ -21,22 +21,26 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // ***********************************************************************
 
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Reflection;
 using NUnit.Framework.Interfaces;
 
 namespace NUnit.Runner.ViewModel
 {
     class ResultsViewModel : BaseViewModel
     {
+        private readonly List<Assembly> _testAssemblies;
+
         /// <summary>
         /// Constructs the view model
         /// </summary>
         /// <param name="results">The package of all results in run</param>
+        /// <param name="testAssemblies"></param>
         /// <param name="viewAll">If true, views all tests, otherwise only shows those
-        /// that did not pass</param>
-        public ResultsViewModel(IReadOnlyCollection<ITestResult> results, bool viewAll)
+        ///     that did not pass</param>
+        public ResultsViewModel(IReadOnlyCollection<ITestResult> results, List<Assembly> testAssemblies, bool viewAll)
         {
+            _testAssemblies = testAssemblies;
             Results = new ObservableCollection<ResultViewModel>();
             foreach (var result in results)
                 AddTestResults(result, viewAll);
@@ -61,7 +65,7 @@ namespace NUnit.Runner.ViewModel
             }
             else if (viewAll || result.ResultState.Status != TestStatus.Passed)
             {
-                Results.Add(new ResultViewModel(result));
+                Results.Add(new ResultViewModel(result, _testAssemblies));
             }
         }
     }

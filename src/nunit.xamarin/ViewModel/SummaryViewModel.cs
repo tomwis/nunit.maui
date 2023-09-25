@@ -22,140 +22,106 @@
 // ***********************************************************************
 
 using System.Reflection;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using System.Windows.Input;
+using NUnit.Framework.Api;
+using NUnit.Framework.Internal;
 using NUnit.Runner.Helpers;
-using NUnit.Runner.View;
-
 using NUnit.Runner.Services;
+using NUnit.Runner.View;
+using nunit.xamarin.Constants;
+using nunit.xamarin.Factories;
+using nunit.xamarin.Helpers;
 
+namespace NUnit.Runner.ViewModel;
 
-namespace NUnit.Runner.ViewModel
+internal class SummaryViewModel : BaseViewModel
 {
-    class SummaryViewModel : BaseViewModel
+    private readonly List<(Assembly Assembly, Dictionary<string, object> Options)> _testAssemblies = new();
+    private TestResultProcessor _resultProcessor;
+    private ResultSummary _results;
+    private bool _running;
+
+    private TestOptions options;
+
+    public SummaryViewModel()
     {
-        readonly TestPackage _testPackage;
-        ResultSummary _results;
-        bool _running;
-        TestResultProcessor _resultProcessor;
+        RunTestsCommand = new Command(async o => await ExecuteTestsAsync(), o => !Running);
+        ViewAllResultsCommand = new Command(
+            async o => await Navigation.PushAsync(
+                new ResultsView(new ResultsViewModel(_results.GetTestResults(), _testAssemblies.Select(t => t.Assembly).ToList(), true))),
+            o => !HasResults);
+        ViewFailedResultsCommand = new Command(
+            async o => await Navigation.PushAsync(
+                new ResultsView(new ResultsViewModel(_results.GetTestResults(), _testAssemblies.Select(t => t.Assembly).ToList(), false))),
+            o => !HasResults);
+    }
 
-        public SummaryViewModel()
+    /// <summary>
+    ///     User options for the test suite.
+    /// </summary>
+    public TestOptions Options
+    {
+        get
         {
-            _testPackage = new TestPackage();
-            RunTestsCommand = new Command(async o => await ExecuteTestsAync(), o => !Running);
-            ViewAllResultsCommand = new Command(
-                async o => await Navigation.PushAsync(new ResultsView(new ResultsViewModel(_results.GetTestResults(), true))),
-                o => !HasResults);
-            ViewFailedResultsCommand = new Command(
-                async o => await Navigation.PushAsync(new ResultsView(new ResultsViewModel(_results.GetTestResults(), false))),
-                o => !HasResults);
+            if (options == null) options = new TestOptions();
+            return options;
         }
+        set => options = value;
+    }
 
-        private TestOptions options;
-
-        /// <summary>
-        /// User options for the test suite.
-        /// </summary>
-        public TestOptions Options {
-            get
-            {
-                if(options == null)
-                {
-                    options = new TestOptions();
-                }
-                return options;
-            }
-            set
-            {
-                options = value;
-            }
-        }
-
-        /// <summary>
-        /// Called from the view when the view is appearing
-        /// </summary>
-        public void OnAppearing()
+    /// <summary>
+    ///     The overall test results
+    /// </summary>
+    public ResultSummary Results
+    {
+        get => _results;
+        set
         {
-            if(Options.AutoRun)
-            {
-                // Don't rerun if we navigate back
-                Options.AutoRun = false;
-                RunTestsCommand.Execute(null);
-            }
+            if (Equals(value, _results)) return;
+            _results = value;
+            OnPropertyChanged();
+            OnPropertyChanged("HasResults");
         }
+    }
 
-        /// <summary>
-        /// The overall test results
-        /// </summary>
-        public ResultSummary Results
+    /// <summary>
+    ///     True if tests are currently running
+    /// </summary>
+    public bool Running
+    {
+        get => _running;
+        set
         {
-            get { return _results; }
-            set
-            {
-                if (Equals(value, _results)) return;
-                _results = value;
-                OnPropertyChanged();
-                OnPropertyChanged("HasResults");
-            }
+            if (value.Equals(_running)) return;
+            _running = value;
+            OnPropertyChanged();
         }
+    }
 
-        /// <summary>
-        /// True if tests are currently running
-        /// </summary>
-        public bool Running
+    /// <summary>
+    ///     True if we have test results to display
+    /// </summary>
+    public bool HasResults => Results != null;
+
+    public ICommand RunTestsCommand { set; get; }
+    public ICommand ViewAllResultsCommand { set; get; }
+    public ICommand ViewFailedResultsCommand { set; get; }
+
+    /// <summary>
+    ///     Called from the view when the view is appearing
+    /// </summary>
+    public void OnAppearing()
+    {
+        if (Options.AutoRun)
         {
-            get { return _running; }
-            set
-            {
-                if (value.Equals(_running)) return;
-                _running = value;
-                OnPropertyChanged();
-            }
+            // Don't rerun if we navigate back
+            Options.AutoRun = false;
+            RunTestsCommand.Execute(null);
         }
+    }
 
-        /// <summary>
-        /// True if we have test results to display
-        /// </summary>
-        public bool HasResults => Results != null;
-
-        public ICommand RunTestsCommand { set; get; }
-        public ICommand ViewAllResultsCommand { set; get; }
-        public ICommand ViewFailedResultsCommand { set; get; }
-
-        /// <summary>
-        /// Adds an assembly to be tested.
-        /// </summary>
-        /// <param name="testAssembly">The test assembly.</param>
-        /// <returns></returns>
-        internal void AddTest(Assembly testAssembly, Dictionary<string, object> options = null)
-        {
-            _testPackage.AddAssembly(testAssembly, options);
-        }
-
-        async Task ExecuteTestsAync()
-        {
-            Running = true;
-            Results = null;
-            TestRunResult results = await _testPackage.ExecuteTests();
-            ResultSummary summary = new ResultSummary(results);
-
-            _resultProcessor = TestResultProcessor.BuildChainOfResponsability(Options);
-            await _resultProcessor.Process(summary).ConfigureAwait(false);
-
-            Device.BeginInvokeOnMainThread(
-                () =>
-                    {
-                        Results = summary;
-                        Running = false;
-
-                    if (Options.TerminateAfterExecution)
-                        TerminateWithSuccess();
-                });
-        }
-
-        public static void TerminateWithSuccess()
-        {
+    public static void TerminateWithSuccess()
+    {
 #if __IOS__
             var selector = new ObjCRuntime.Selector("terminateWithSuccess");
             UIKit.UIApplication.SharedApplication.PerformSelector(selector, UIKit.UIApplication.SharedApplication, 0);
@@ -164,6 +130,66 @@ namespace NUnit.Runner.ViewModel
 #elif WINDOWS_UWP
             Windows.UI.Xaml.Application.Current.Exit();
 #endif
+    }
+
+    private async Task ExecuteTestsAsync()
+    {
+        Running = true;
+        Results = null;
+        
+        var testPackage = await SelectTestPackage();
+        foreach (var tuple in _testAssemblies)
+        {
+            testPackage.AddAssembly(tuple.Assembly, tuple.Options);
         }
+        
+        var results = await testPackage.ExecuteTests();
+        var summary = new ResultSummary(results);
+
+        _resultProcessor = TestResultProcessor.BuildChainOfResponsability(Options);
+        await _resultProcessor.Process(summary).ConfigureAwait(false);
+        await MainThread.InvokeOnMainThreadAsync(() =>
+        {
+            Results = summary;
+            Running = false;
+
+            if (Options.TerminateAfterExecution)
+                TerminateWithSuccess();
+        });
+    }
+
+    private async Task<TestPackage> SelectTestPackage()
+    {
+        var testPackage = new TestPackage();
+        const string categoryName = CategoryNames.RunOnlyThis;
+        var testFilter = TestRunnerFilterFactory.CreateCategoryFilter(categoryName);
+        foreach (var assembly in _testAssemblies)
+        {
+            var runner = await TestAssemblyRunnerFactory.CreateTestAssemblyRunner(assembly.Assembly, assembly.Options)
+                .ConfigureAwait(false);
+            
+            var count = runner.CountTestCases(testFilter);
+            if (count > 0)
+            {
+                testPackage = new CategoryTestPackage(categoryName);
+                break;
+            }
+        }
+
+        return testPackage;
+    }
+
+    /// <summary>
+    ///     Adds an assembly to be tested.
+    /// </summary>
+    /// <param name="testAssembly">The test assembly.</param>
+    /// <returns></returns>
+    internal void AddTest(Assembly testAssembly, Dictionary<string, object> options = null)
+    {
+        var assemblyName = testAssembly.ToString();
+        var alreadyAdded = _testAssemblies.Any(tuple => tuple.Assembly.ToString() == assemblyName);
+        if (alreadyAdded) return;
+        
+        _testAssemblies.Add((testAssembly, options));
     }
 }

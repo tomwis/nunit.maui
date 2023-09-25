@@ -21,19 +21,25 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // ***********************************************************************
 
+using System.Reflection;
+using System.Windows.Input;
 using NUnit.Framework.Interfaces;
 using NUnit.Runner.Extensions;
+using NUnit.Runner.Helpers;
 
 namespace NUnit.Runner.ViewModel
 {
     internal class ResultViewModel
     {
-        public ResultViewModel(ITestResult result)
+        private readonly List<Assembly> _testAssemblies;
+
+        public ResultViewModel(ITestResult result, List<Assembly> testAssemblies)
         {
+            _testAssemblies = testAssemblies;
             TestResult = result;
-            Result = result.ResultState.Status.ToString().ToUpperInvariant();
             Name = result.Name;
             Parent = result.Test.Parent.FullName;
+            Result = result.ResultState.Status.ToString().ToUpperInvariant();
             Message = result.Message;
         }
 
@@ -42,6 +48,7 @@ namespace NUnit.Runner.ViewModel
         public string Name { get; private set; }
         public string Parent { get; private set; }
         public string Message { get; private set; }
+        public IReadOnlyList<Assembly> TestAssemblies => _testAssemblies.AsReadOnly();
 
         /// <summary>
         /// Gets the color for this result.

@@ -22,6 +22,7 @@
 // ***********************************************************************
 
 using NUnit.Framework;
+using nunit.xamarin.Constants;
 
 namespace NUnit.Runner.Tests
 {
@@ -45,6 +46,7 @@ namespace NUnit.Runner.Tests
         }
 
         [Test]
+        // [Category(CategoryNames.RunOnlyThis)]
         public void TestPassedInParameter()
         {
             var val = TestContext.Parameters.Get("Parameter");

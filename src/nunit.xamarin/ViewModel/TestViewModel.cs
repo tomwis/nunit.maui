@@ -22,23 +22,35 @@
 // ***********************************************************************
 
 using System;
+using System.Reflection;
 using System.Text;
+using System.Windows.Input;
 using NUnit.Framework.Interfaces;
 using NUnit.Runner.Extensions;
+using NUnit.Runner.Helpers;
+using nunit.xamarin.Helpers;
 
 namespace NUnit.Runner.ViewModel
 {
     class TestViewModel : BaseViewModel
     {
-        public TestViewModel(ITestResult result)
+        private readonly IReadOnlyList<Assembly> _testAssemblies;
+        private ITestResult _testResult;
+        private string _message;
+        private string _output;
+        private string _stackTrace;
+
+        public TestViewModel(ITestResult result, IReadOnlyList<Assembly> testAssemblies)
         {
+            _testAssemblies = testAssemblies;
             TestResult = result;
             Message = StringOrNone(result.Message);
             Output = StringOrNone(result.Output);
             StackTrace = StringOrNone(result.StackTrace);
+            RunTestCommand = new Command(async () => await RunTest());
 
             var builder = new StringBuilder();
-            IPropertyBag props = result.Test.Properties;
+            var props = result.Test.Properties;
             foreach (string key in props.Keys)
             {
                 foreach (var value in props[key])
@@ -49,11 +61,85 @@ namespace NUnit.Runner.ViewModel
             Properties = StringOrNone(builder.ToString());
         }
 
-        public ITestResult TestResult { get; private set; }
-        public string Message { get; private set; }
-        public string Output { get; private set; }
-        public string StackTrace { get; private set; }
+        public ITestResult TestResult
+        {
+            get => _testResult;
+            private set
+            {
+                _testResult = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public string Message
+        {
+            get => _message;
+            private set
+            {
+                _message = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public string Output
+        {
+            get => _output;
+            private set
+            {
+                _output = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public string StackTrace
+        {
+            get => _stackTrace;
+            private set
+            {
+                _stackTrace = value;
+                OnPropertyChanged();
+            }
+        }
+
         public string Properties { get; private set; }
+        public ICommand RunTestCommand { get; private set; }
+
+        private async Task RunTest()
+        {
+            var testResultFullName = TestResult.FullName;
+            var testPackage = new SingleTestPackage(testResultFullName);
+            _testAssemblies.ToList().ForEach(asm => testPackage.AddAssembly(asm));
+            var results = await testPackage.ExecuteTests();
+            TestResult = GetCurrentTest(results.TestResults, testResultFullName);
+            Message = StringOrNone(TestResult.Message);
+            Output = StringOrNone(TestResult.Output);
+            StackTrace = StringOrNone(TestResult.StackTrace);
+        }
+
+        private ITestResult GetCurrentTest(IEnumerable<ITestResult> testResults, string testFullName)
+        {
+            ITestResult result = null;
+            foreach (var testResult in testResults)
+            {
+                result = GetCurrentTest(testResult, testFullName);
+                if (result is not null)
+                {
+                    break;
+                }
+            }
+
+            return result;
+        }
+
+        private ITestResult GetCurrentTest(ITestResult testResult, string testFullName)
+        {
+            if (testResult.Test.IsSuite)
+            {
+                return GetCurrentTest(testResult.Children, testFullName);
+            }
+
+            return testResult.FullName == testFullName ? testResult : null;
+        }
 
         /// <summary>
         /// Gets the color for this result.

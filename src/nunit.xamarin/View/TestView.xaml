@@ -35,6 +35,8 @@
 
             <Label Text="Stack Trace:" FontAttributes="Bold" FontSize="Medium" />
             <Label Text="{Binding StackTrace}" LineBreakMode="CharacterWrap" FontSize="Small" />
+            
+            <Button Text="Run Test" Command="{Binding RunTestCommand}" HorizontalOptions="FillAndExpand" />
         </StackLayout>
     </ScrollView>
 </ContentPage>

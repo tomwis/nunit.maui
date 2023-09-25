@@ -41,7 +41,11 @@ namespace NUnit.Runner.View
         {
                 var result = e.SelectedItem as ResultViewModel;
                 if (result != null)
-                    await Navigation.PushAsync(new TestView(new TestViewModel(result.TestResult)));
+                {
+                    await Navigation.PushAsync(
+                        new TestView(
+                            new TestViewModel(result.TestResult, result.TestAssemblies)));
+                }
         }
 	}
 }
