@@ -39,7 +39,8 @@ namespace NUnit.Runner.Helpers
     {
         private readonly List<(Assembly, Dictionary<string,object>)> _testAssemblies = new List<(Assembly, Dictionary<string,object>)>();
         
-        public event EventHandler Finished; 
+        public event EventHandler<string> TestStarted; 
+        public event EventHandler TestFinished; 
         
         public void AddAssembly(Assembly testAssembly, Dictionary<string,object> options = null)
         {
@@ -72,6 +73,7 @@ namespace NUnit.Runner.Helpers
                 var result = await Task.Run(() =>
                     {
                         var finishedTestListener = new FinishedTestListener();
+                        finishedTestListener.Started += FinishedTestListenerOnStarted;
                         finishedTestListener.Finished += FinishedTestListenerOnFinished;
                         try
                         {
@@ -84,6 +86,7 @@ namespace NUnit.Runner.Helpers
                         }
                         finally
                         {
+                            finishedTestListener.Started -= FinishedTestListenerOnStarted;
                             finishedTestListener.Finished -= FinishedTestListenerOnFinished;
                         }
 
@@ -98,9 +101,14 @@ namespace NUnit.Runner.Helpers
             return resultPackage;
         }
 
+        private void FinishedTestListenerOnStarted(object sender, string e)
+        {
+            TestStarted?.Invoke(this, e);
+        }
+
         private void FinishedTestListenerOnFinished(object sender, EventArgs e)
         {
-            Finished?.Invoke(this, EventArgs.Empty);
+            TestFinished?.Invoke(this, EventArgs.Empty);
         }
 
         protected virtual ITestFilter GetTestFilters() => TestFilter.Empty;

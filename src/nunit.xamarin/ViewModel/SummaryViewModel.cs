@@ -48,6 +48,7 @@ internal class SummaryViewModel : BaseViewModel
     private int _finishedTestsCount;
     private string _progressLabel;
     private readonly object _progressLabelLock = new ();
+    private string _currentTestName;
 
     public SummaryViewModel()
     {
@@ -156,7 +157,8 @@ internal class SummaryViewModel : BaseViewModel
                 _finishedTestsCount = 0;
                 _allTestsCount = await testPackage.GetCount();
                 await MainThread.InvokeOnMainThreadAsync(UpdateProgressLabel);
-                testPackage.Finished += TestPackageOnFinished;
+                testPackage.TestStarted += TestPackageOnTestStarted;
+                testPackage.TestFinished += TestPackageOnTestFinished;
                 var results = await testPackage.ExecuteTests();
                 var summary = new ResultSummary(results);
 
@@ -180,14 +182,32 @@ internal class SummaryViewModel : BaseViewModel
             {
                 if (testPackage != null)
                 {
-                    testPackage.Finished -= TestPackageOnFinished;
+                    testPackage.TestStarted -= TestPackageOnTestStarted;
+                    testPackage.TestFinished -= TestPackageOnTestFinished;
+                    CurrentTestName = null;
                 }
                 await MainThread.InvokeOnMainThreadAsync(() => Running = false);
             }
         });
     }
 
-    private async void TestPackageOnFinished(object sender, EventArgs e)
+    private async void TestPackageOnTestStarted(object sender, string e)
+    {
+        await MainThread.InvokeOnMainThreadAsync(() => CurrentTestName = e);
+    }
+
+    public string CurrentTestName
+    {
+        get => _currentTestName;
+        set
+        {
+            if (value == _currentTestName) return;
+            _currentTestName = value;
+            OnPropertyChanged();
+        }
+    }
+
+    private async void TestPackageOnTestFinished(object sender, EventArgs e)
     {
         await MainThread.InvokeOnMainThreadAsync(() =>
         {

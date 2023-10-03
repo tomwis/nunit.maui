@@ -8,7 +8,11 @@ public class FinishedTestListener : ITestListener
 
     public void TestStarted(ITest test)
     {
+        if (!test.HasChildren)
+            Started?.Invoke(this, test.FullName);
     }
+
+    public event EventHandler<string> Started;
 
     public void TestFinished(ITestResult result)
     {
