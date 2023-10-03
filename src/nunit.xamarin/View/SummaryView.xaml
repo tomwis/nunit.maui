@@ -49,6 +49,7 @@
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
                 
                 <StackLayout Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2"  Orientation="Horizontal" Spacing="4" HorizontalOptions="CenterAndExpand">
@@ -110,6 +111,10 @@
                 <StackLayout Grid.Row="12" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" Spacing="4">
                     <Label Text="Duration:" FontSize="Small" FontAttributes="Bold" />
                     <Label Text="{Binding Results.Duration, StringFormat='{0:s\\.fff} seconds'}" FontSize="Small" />
+                </StackLayout>
+                <StackLayout Grid.Row="13" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" Spacing="4">
+                    <Label Text="Exception:" FontSize="Small" FontAttributes="Bold" />
+                    <Label Text="{Binding RunException, StringFormat='{0:s\\.fff} seconds'}" FontSize="Small" />
                 </StackLayout>
             </Grid>
 

@@ -42,6 +42,7 @@ internal class SummaryViewModel : BaseViewModel
     private bool _running;
 
     private TestOptions options;
+    private Exception _runException;
 
     public SummaryViewModel()
     {
@@ -136,26 +137,51 @@ internal class SummaryViewModel : BaseViewModel
     {
         Running = true;
         Results = null;
-        
-        var testPackage = await SelectTestPackage();
-        foreach (var tuple in _testAssemblies)
+        await Task.Run(async () =>
         {
-            testPackage.AddAssembly(tuple.Assembly, tuple.Options);
-        }
-        
-        var results = await testPackage.ExecuteTests();
-        var summary = new ResultSummary(results);
+            try
+            {
+                var testPackage = await SelectTestPackage();
+                foreach (var tuple in _testAssemblies)
+                {
+                    testPackage.AddAssembly(tuple.Assembly, tuple.Options);
+                }
 
-        _resultProcessor = TestResultProcessor.BuildChainOfResponsability(Options);
-        await _resultProcessor.Process(summary).ConfigureAwait(false);
-        await MainThread.InvokeOnMainThreadAsync(() =>
-        {
-            Results = summary;
-            Running = false;
+                var results = await testPackage.ExecuteTests();
+                var summary = new ResultSummary(results);
 
-            if (Options.TerminateAfterExecution)
-                TerminateWithSuccess();
+                _resultProcessor = TestResultProcessor.BuildChainOfResponsability(Options);
+                await _resultProcessor.Process(summary).ConfigureAwait(false);
+                await MainThread.InvokeOnMainThreadAsync(() =>
+                {
+                    Results = summary;
+                    Running = false;
+
+                    if (Options.TerminateAfterExecution)
+                        TerminateWithSuccess();
+                });
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                await MainThread.InvokeOnMainThreadAsync(() => RunException = e);
+            }
+            finally
+            {
+                await MainThread.InvokeOnMainThreadAsync(() => Running = false);
+            }
         });
+    }
+
+    public Exception RunException
+    {
+        get => _runException;
+        set
+        {
+            if (Equals(value, _runException)) return;
+            _runException = value;
+            OnPropertyChanged();
+        }
     }
 
     private async Task<TestPackage> SelectTestPackage()
