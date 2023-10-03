@@ -18,6 +18,8 @@
                 </DataTrigger>
             </Button.Triggers>
         </Button>
+        
+        <Label Text="{Binding ProgressLabel}" FontSize="Large" />
 
         <ScrollView Orientation="Vertical"
                     VerticalOptions="FillAndExpand" 

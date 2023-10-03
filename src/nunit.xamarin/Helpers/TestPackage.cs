@@ -39,11 +39,26 @@ namespace NUnit.Runner.Helpers
     {
         private readonly List<(Assembly, Dictionary<string,object>)> _testAssemblies = new List<(Assembly, Dictionary<string,object>)>();
         
+        public event EventHandler Finished; 
+        
         public void AddAssembly(Assembly testAssembly, Dictionary<string,object> options = null)
         {
             _testAssemblies.Add((testAssembly, options));
         }
 
+        public async Task<int> GetCount()
+        {
+            int count = 0;
+            foreach (var (assembly, options) in _testAssemblies)
+            {
+                var runner = await TestAssemblyRunnerFactory.CreateTestAssemblyRunner(assembly, options)
+                    .ConfigureAwait(false);
+                
+                count += runner.CountTestCases(GetTestFilters());
+            }
+
+            return count;
+        }
         public async Task<TestRunResult> ExecuteTests()
         {
             var resultPackage = new TestRunResult();
@@ -54,7 +69,26 @@ namespace NUnit.Runner.Helpers
                     .ConfigureAwait(false);
                 
                 var testFilter = GetTestFilters();
-                var result = await Task.Run(() => runner.Run(TestListener.NULL, testFilter))
+                var result = await Task.Run(() =>
+                    {
+                        var finishedTestListener = new FinishedTestListener();
+                        finishedTestListener.Finished += FinishedTestListenerOnFinished;
+                        try
+                        {
+                            var testResult = runner.Run(finishedTestListener, testFilter);
+                            return testResult;
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine(e);
+                        }
+                        finally
+                        {
+                            finishedTestListener.Finished -= FinishedTestListenerOnFinished;
+                        }
+
+                        return null;
+                    })
                     .ConfigureAwait(false);
                 
                 resultPackage.AddResult(result);
@@ -62,6 +96,11 @@ namespace NUnit.Runner.Helpers
             
             resultPackage.CompleteTestRun();
             return resultPackage;
+        }
+
+        private void FinishedTestListenerOnFinished(object sender, EventArgs e)
+        {
+            Finished?.Invoke(this, EventArgs.Empty);
         }
 
         protected virtual ITestFilter GetTestFilters() => TestFilter.Empty;

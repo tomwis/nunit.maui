@@ -44,6 +44,11 @@ internal class SummaryViewModel : BaseViewModel
     private TestOptions options;
     private Exception _runException;
 
+    private int _allTestsCount;
+    private int _finishedTestsCount;
+    private string _progressLabel;
+    private readonly object _progressLabelLock = new ();
+
     public SummaryViewModel()
     {
         RunTestsCommand = new Command(async o => await ExecuteTestsAsync(), o => !Running);
@@ -139,14 +144,19 @@ internal class SummaryViewModel : BaseViewModel
         Results = null;
         await Task.Run(async () =>
         {
+            TestPackage testPackage = null;
             try
             {
-                var testPackage = await SelectTestPackage();
+                testPackage = await SelectTestPackage();
                 foreach (var tuple in _testAssemblies)
                 {
                     testPackage.AddAssembly(tuple.Assembly, tuple.Options);
                 }
 
+                _finishedTestsCount = 0;
+                _allTestsCount = await testPackage.GetCount();
+                await MainThread.InvokeOnMainThreadAsync(UpdateProgressLabel);
+                testPackage.Finished += TestPackageOnFinished;
                 var results = await testPackage.ExecuteTests();
                 var summary = new ResultSummary(results);
 
@@ -168,9 +178,41 @@ internal class SummaryViewModel : BaseViewModel
             }
             finally
             {
+                if (testPackage != null)
+                {
+                    testPackage.Finished -= TestPackageOnFinished;
+                }
                 await MainThread.InvokeOnMainThreadAsync(() => Running = false);
             }
         });
+    }
+
+    private async void TestPackageOnFinished(object sender, EventArgs e)
+    {
+        await MainThread.InvokeOnMainThreadAsync(() =>
+        {
+            lock (_progressLabelLock)
+            {
+                ++_finishedTestsCount;
+                UpdateProgressLabel();
+            }
+        });
+    }
+
+    private void UpdateProgressLabel()
+    {
+        ProgressLabel = $"Progress: {_finishedTestsCount}/{_allTestsCount}";
+    }
+
+    public string ProgressLabel
+    {
+        get => _progressLabel;
+        set
+        {
+            if (value == _progressLabel) return;
+            _progressLabel = value;
+            OnPropertyChanged();
+        }
     }
 
     public Exception RunException
