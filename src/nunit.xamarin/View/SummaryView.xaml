@@ -114,7 +114,7 @@
                 </StackLayout>
                 <StackLayout Grid.Row="13" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" Spacing="4">
                     <Label Text="Exception:" FontSize="Small" FontAttributes="Bold" />
-                    <Label Text="{Binding RunException, StringFormat='{0:s\\.fff} seconds'}" FontSize="Small" />
+                    <Label Text="{Binding RunException}" FontSize="Small" />
                 </StackLayout>
             </Grid>
 
