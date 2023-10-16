@@ -24,7 +24,8 @@
                                            VerticalOptions="FillAndExpand"/>
 		                            <StackLayout Orientation="Vertical" Spacing="4" Padding="4" HorizontalOptions="StartAndExpand">
 		                                <Label Text="{Binding Name}" FontSize="Medium" />
-                                        <Label Text="{Binding Parent}" LineBreakMode="MiddleTruncation" TextColor="#4C4C4C" FontSize="Small" />
+                                        <Label Text="{Binding Parent}" TextColor="#4C4C4C" FontSize="Small" MaxLines="3" />
+                                        <Label Text="{Binding DurationMs, StringFormat='{0:F3} ms'}" TextColor="#4C4C4C" FontSize="Small" />
 		                            </StackLayout>
                                 </StackLayout>
                             </ViewCell.View>
