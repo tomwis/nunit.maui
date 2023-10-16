@@ -24,12 +24,16 @@
 using System.Collections.ObjectModel;
 using System.Reflection;
 using NUnit.Framework.Interfaces;
+using NUnit.Framework.Internal;
+using NUnit.Runner.View;
+using nunit.xamarin.Enums;
 
 namespace NUnit.Runner.ViewModel
 {
     class ResultsViewModel : BaseViewModel
     {
         private readonly List<Assembly> _testAssemblies;
+        private ObservableCollection<ResultViewModel> _results;
 
         /// <summary>
         /// Constructs the view model
@@ -49,7 +53,16 @@ namespace NUnit.Runner.ViewModel
         /// <summary>
         /// A list of tests that did not pass
         /// </summary>
-        public ObservableCollection<ResultViewModel> Results { get; private set; }
+        public ObservableCollection<ResultViewModel> Results
+        {
+            get => _results;
+            private set
+            {
+                if (Equals(value, _results)) return;
+                _results = value;
+                OnPropertyChanged();
+            }
+        }
 
         /// <summary>
         /// Add all tests that did not pass to the Results collection
@@ -66,6 +79,26 @@ namespace NUnit.Runner.ViewModel
             else if (viewAll || result.ResultState.Status != TestStatus.Passed)
             {
                 Results.Add(new ResultViewModel(result, _testAssemblies));
+            }
+        }
+
+        public void SortItems(SortOption sortOption, SortDirection sortDirection)
+        {
+            var sorted = sortOption switch
+            {
+                SortOption.TestName => SortBy(result => result.Name),
+                SortOption.ParentName => SortBy(result => result.Parent),
+                SortOption.Duration => SortBy(result => result.DurationMs),
+                _ => throw new ArgumentOutOfRangeException(nameof(sortOption), sortOption, null)
+            };
+
+            Results = new ObservableCollection<ResultViewModel>(sorted);
+
+            IOrderedEnumerable<ResultViewModel> SortBy<T>(Func<ResultViewModel, T> sortingPropertyFunc)
+            {
+                return sortDirection == SortDirection.Ascending 
+                    ? Results.OrderBy(sortingPropertyFunc) 
+                    : Results.OrderByDescending(sortingPropertyFunc);
             }
         }
     }

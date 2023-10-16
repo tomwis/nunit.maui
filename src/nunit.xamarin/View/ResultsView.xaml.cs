@@ -22,6 +22,8 @@
 // ***********************************************************************
 
 using NUnit.Runner.ViewModel;
+using nunit.xamarin.Constants;
+using nunit.xamarin.Enums;
 
 namespace NUnit.Runner.View
 {
@@ -30,8 +32,11 @@ namespace NUnit.Runner.View
     /// </summary>
     public partial class ResultsView : ContentPage
 	{
-		internal ResultsView (ResultsViewModel model)
+        private readonly ResultsViewModel _viewModel;
+
+        internal ResultsView (ResultsViewModel model)
         {
+            _viewModel = model;
             model.Navigation = Navigation;
             BindingContext = model;
             InitializeComponent();
@@ -47,5 +52,60 @@ namespace NUnit.Runner.View
                             new TestViewModel(result.TestResult, result.TestAssemblies)));
                 }
         }
-	}
+
+        private async void Sort_OnClicked(object sender, EventArgs e)
+        {
+            const string cancelOptionText = "Cancel";
+            var options = new []
+            {
+                SortingNames.SortOptionTestNameAsc,
+                SortingNames.SortOptionTestNameDesc,
+                SortingNames.SortOptionParentNameAsc,
+                SortingNames.SortOptionParentNameDesc,
+                SortingNames.SortOptionDurationAsc,
+                SortingNames.SortOptionDurationDesc,
+            };
+            var result = await DisplayActionSheet("Sort results", cancelOptionText, null, options);
+            if (result == cancelOptionText) return;
+            
+            var (sortOption, sortDirection) = ParseSortingResult(result);
+            if (sortOption is null || sortDirection is null) return;
+            _viewModel.SortItems(sortOption.Value, sortDirection.Value);
+        }
+
+        private static (SortOption?, SortDirection?) ParseSortingResult(string result)
+        {
+            SortOption? sortOption = SortOption.TestName;
+            SortDirection? sortDirection = SortDirection.Ascending;
+            switch (result)
+            {
+                case SortingNames.SortOptionTestNameAsc:
+                    sortOption = SortOption.TestName;
+                    sortDirection = SortDirection.Ascending;
+                    break;
+                case SortingNames.SortOptionTestNameDesc:
+                    sortOption = SortOption.TestName;
+                    sortDirection = SortDirection.Descending;
+                    break;
+                case SortingNames.SortOptionParentNameAsc:
+                    sortOption = SortOption.ParentName;
+                    sortDirection = SortDirection.Ascending;
+                    break;
+                case SortingNames.SortOptionParentNameDesc:
+                    sortOption = SortOption.ParentName;
+                    sortDirection = SortDirection.Descending;
+                    break;
+                case SortingNames.SortOptionDurationAsc:
+                    sortOption = SortOption.Duration;
+                    sortDirection = SortDirection.Ascending;
+                    break;
+                case SortingNames.SortOptionDurationDesc:
+                    sortOption = SortOption.Duration;
+                    sortDirection = SortDirection.Descending;
+                    break;
+            }
+
+            return (sortOption, sortDirection);
+        }
+    }
 }

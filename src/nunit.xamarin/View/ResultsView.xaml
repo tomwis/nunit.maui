@@ -4,7 +4,14 @@
              x:Class="NUnit.Runner.View.ResultsView"
              Title="Test Results"
              Padding="0"
-             BackgroundColor="{DynamicResource defaultBackground}" >
+             BackgroundColor="{DynamicResource defaultBackground}">
+    
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Sort"
+                     Order="Secondary"
+                     Clicked="Sort_OnClicked"/>
+    </ContentPage.ToolbarItems>
+    
     <StackLayout Orientation="Vertical" Spacing="4" BackgroundColor="{DynamicResource defaultBackground}" >
         <ScrollView Orientation="Vertical"
                     VerticalOptions="FillAndExpand" 
