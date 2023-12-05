@@ -114,6 +114,7 @@ namespace NUnit.Runner.ViewModel
             Message = StringOrNone(TestResult.Message);
             Output = StringOrNone(TestResult.Output);
             StackTrace = StringOrNone(TestResult.StackTrace);
+            OnPropertyChanged(nameof(Color));
         }
 
         private ITestResult GetCurrentTest(IEnumerable<ITestResult> testResults, string testFullName)
