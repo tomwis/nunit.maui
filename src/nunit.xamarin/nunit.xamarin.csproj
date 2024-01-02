@@ -4,16 +4,15 @@
     <Company>NUnit</Company>
     <Product>NUnit 3 Maui Runner</Product>
     <Copyright>Copyright (C) 2018, Rob Prouse</Copyright>
-    <Version Condition="'$(Version)' == ''">3.10.1</Version>
+    <PackageVersion Condition="'$(PackageVersion)' == ''">3.11.0</PackageVersion>
 
     <!-- NuGet Package Info -->
-    <PackageId>nunit.maui</PackageId>
+    <PackageId>tm.nunit.maui</PackageId>
     <Title>NUnit 3 Maui Runner</Title>
-    <Authors>Rob Prouse</Authors>
-    <PackageLicenseUrl>https://raw.githubusercontent.com/nunit/nunit.xamarin/master/LICENSE.txt</PackageLicenseUrl>
-    <PackageIconUrl>https://cdn.rawgit.com/nunit/resources/master/images/icon/nunit_256.png</PackageIconUrl>
-    <PackageProjectUrl>https://github.com/nunit/nunit.xamarin</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/nunit/nunit.xamarin</RepositoryUrl>
+    <Authors>Rob Prouse, Tomasz Wiśniewski</Authors>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/tomwis/nunit.maui</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/tomwis/nunit.maui</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>nunit xamarin android ios monoandroid monotouch maui tdd unit test testing</PackageTags>
     <Description>
@@ -29,7 +28,7 @@ Supported Maui platforms:
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug_PreRelease' ">
     <VersionSuffix>$([System.DateTime]::Now.ToString("yyyyMMddHHmmss"))</VersionSuffix>
-    <Version>3.10.1-$(VersionSuffix)</Version>
+    <PackageVersion>3.10.1-$(VersionSuffix)</PackageVersion>
     <PackageOutputPath>$(HOME)\.nuget\local_packages</PackageOutputPath>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
