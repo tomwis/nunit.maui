@@ -23,6 +23,7 @@
 
 using System.Reflection;
 using System.Windows.Input;
+using NUnit.Framework;
 using NUnit.Framework.Api;
 using NUnit.Framework.Internal;
 using NUnit.Runner.Helpers;

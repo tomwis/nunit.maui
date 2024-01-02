@@ -1,4 +1,4 @@
-namespace nunit.xamarin.Constants;
+namespace NUnit.Framework;
 
 public static class CategoryNames
 {
