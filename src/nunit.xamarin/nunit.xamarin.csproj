@@ -4,7 +4,6 @@
     <Company>NUnit</Company>
     <Product>NUnit 3 Maui Runner</Product>
     <Copyright>Copyright (C) 2018, Rob Prouse</Copyright>
-    <PackageVersion Condition="'$(PackageVersion)' == ''">3.11.0</PackageVersion>
 
     <!-- NuGet Package Info -->
     <PackageId>tm.nunit.maui</PackageId>
@@ -28,7 +27,8 @@ Supported Maui platforms:
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug_PreRelease' ">
     <VersionSuffix>$([System.DateTime]::Now.ToString("yyyyMMddHHmmss"))</VersionSuffix>
-    <PackageVersion>3.10.1-$(VersionSuffix)</PackageVersion>
+    <PackageVersion Condition="'$(PackageVersion)' == ''">3.11.0</PackageVersion>
+    <PackageVersion>$(PackageVersion)-$(VersionSuffix)</PackageVersion>
     <PackageOutputPath>$(HOME)\.nuget\local_packages</PackageOutputPath>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>

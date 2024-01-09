@@ -4,14 +4,25 @@
 name: Release Nuget package to Nuget.org
 
 on:
-  release:
-    types: [published,edited]
+    push:
+        tags:
+            - 'v*.*.*'
 
 jobs:
-  build:
+  release:
     runs-on: macos-13
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v3 
+    - name: Read tag
+      id: set-tag
+      run: echo "tag=${GITHUB_REF#refs/*/}" >> $GITHUB_OUTPUT
+    - name: Set version
+      id: set-version
+      run: |
+        tag=${{ steps.set-tag.outputs.tag }}
+        echo "version="${tag:1}"" >> $GITHUB_OUTPUT
+    - name: Check tag and version
+      run: echo "Preparing release from tag ${{ steps.set-tag.outputs.tag }} with version ${{ steps.set-version.outputs.version }}"
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:
@@ -21,6 +32,11 @@ jobs:
     - name: Build
       run: dotnet build src/nunit.xamarin/nunit.xamarin.csproj -c Release
     - name: Pack
-      run: dotnet pack src/nunit.xamarin/nunit.xamarin.csproj --no-build --output ${{ vars.NUGET_PACKAGE_OUTPUT_FOLDER }}
+      run: dotnet pack src/nunit.xamarin/nunit.xamarin.csproj --no-build -p:PackageVersion=${{ steps.set-version.outputs.version }} --output ${{ vars.NUGET_PACKAGE_OUTPUT_FOLDER }}
+    - name: Check generated package
+      run: ls ${{ vars.NUGET_PACKAGE_OUTPUT_FOLDER }}
     - name: Push
-      run: dotnet nuget push ${{ vars.NUGET_PACKAGE_OUTPUT_FOLDER }}/tm.nunit.maui.*.nupkg --api-key ${{secrets.nuget_api_key}} --source https://api.nuget.org/v3/index.json
+      run: |
+        pkg=tm.nunit.maui.${{ steps.set-version.outputs.version }}.nupkg
+        echo "Pushing $pkg"
+        dotnet nuget push ${{ vars.NUGET_PACKAGE_OUTPUT_FOLDER }}/$pkg --api-key ${{secrets.nuget_api_key}} --source https://api.nuget.org/v3/index.json

@@ -201,3 +201,5 @@ tools/*
 Resource.Designer.cs
 
 .idea/*
+
+src/nunit.xamarin/nupkgs/*
